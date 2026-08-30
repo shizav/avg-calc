@@ -14,11 +14,14 @@ const translations = {
     addCourse: "Add course",
     course: "Course",
     credits: "Credits",
+    edit: "Edit",
+    save: "Save",
+    cancel: "Cancel",
     remove: "Remove",
     calculate: "Calculate",
     clearAll: "Clear all",
     emptyState: "No courses added yet.",
-    errorName: "Please enter a course name.",
+    untitledCourse: "Untitled course",
     errorCredits: "Credit points must be a positive number.",
     errorGrade: "Grade must be a number between 0 and 100.",
     resultEmpty: "Add at least one course to calculate an average.",
@@ -38,11 +41,14 @@ const translations = {
     addCourse: "הוסף קורס",
     course: "קורס",
     credits: 'נק"ז',
+    edit: "ערוך",
+    save: "שמור",
+    cancel: "ביטול",
     remove: "הסר",
     calculate: "חשב",
     clearAll: "נקה הכול",
     emptyState: "עדיין לא נוספו קורסים.",
-    errorName: "יש להזין שם קורס.",
+    untitledCourse: "קורס ללא שם",
     errorCredits: "נקודות הזכות חייבות להיות מספר חיובי.",
     errorGrade: "הציון חייב להיות מספר בין 0 ל-100.",
     resultEmpty: "יש להוסיף לפחות קורס אחד כדי לחשב ממוצע.",
@@ -77,6 +83,9 @@ function t(key) {
 /** @type {{id: string, name: string, credits: number, grade: number}[]} */
 let courses = loadCourses();
 
+/** id of the course whose grade is currently being edited inline, or null */
+let editingId = null;
+
 const form = document.getElementById("course-form");
 const nameInput = document.getElementById("course-name");
 const creditsInput = document.getElementById("course-credits");
@@ -87,6 +96,7 @@ const emptyState = document.getElementById("empty-state");
 const calculateBtn = document.getElementById("calculate-btn");
 const clearBtn = document.getElementById("clear-btn");
 const resultEl = document.getElementById("result");
+const resultLoaderEl = document.getElementById("result-loader");
 const langMenuBtn = document.getElementById("lang-toggle");
 const langMenu = document.getElementById("lang-menu");
 
@@ -145,6 +155,7 @@ function applyLanguage(lang) {
   saveLang(lang);
   clearError();
   resultEl.hidden = true;
+  resultLoaderEl.hidden = true;
   render();
 }
 
@@ -199,31 +210,97 @@ function render() {
     const row = document.createElement("tr");
 
     const nameCell = document.createElement("td");
-    nameCell.textContent = course.name;
+    nameCell.textContent = course.name || t("untitledCourse");
 
     const creditsCell = document.createElement("td");
     creditsCell.textContent = course.credits;
 
     const gradeCell = document.createElement("td");
-    gradeCell.textContent = course.grade;
-
     const actionCell = document.createElement("td");
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "remove-btn";
-    removeBtn.textContent = t("remove");
-    removeBtn.addEventListener("click", () => removeCourse(course.id));
-    actionCell.appendChild(removeBtn);
+
+    if (course.id === editingId) {
+      const gradeEditInput = document.createElement("input");
+      gradeEditInput.type = "number";
+      gradeEditInput.className = "grade-edit-input";
+      gradeEditInput.min = "0";
+      gradeEditInput.max = "100";
+      gradeEditInput.step = "0.1";
+      gradeEditInput.value = course.grade;
+      gradeEditInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") saveGradeEdit(course.id, gradeEditInput.value);
+        if (e.key === "Escape") {
+          editingId = null;
+          render();
+        }
+      });
+      gradeCell.appendChild(gradeEditInput);
+
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "row-btn";
+      saveBtn.textContent = t("save");
+      saveBtn.addEventListener("click", () => saveGradeEdit(course.id, gradeEditInput.value));
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "row-btn";
+      cancelBtn.textContent = t("cancel");
+      cancelBtn.addEventListener("click", () => {
+        editingId = null;
+        render();
+      });
+
+      actionCell.append(saveBtn, cancelBtn);
+      requestAnimationFrame(() => gradeEditInput.focus());
+    } else {
+      gradeCell.textContent = course.grade;
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "row-btn";
+      editBtn.textContent = t("edit");
+      editBtn.addEventListener("click", () => {
+        editingId = course.id;
+        render();
+      });
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "remove-btn";
+      removeBtn.textContent = t("remove");
+      removeBtn.addEventListener("click", () => removeCourse(course.id));
+
+      actionCell.append(editBtn, removeBtn);
+    }
 
     row.append(nameCell, creditsCell, gradeCell, actionCell);
     courseList.appendChild(row);
   }
 
   resultEl.hidden = true;
+  resultLoaderEl.hidden = true;
 }
 
 function removeCourse(id) {
   courses = courses.filter((c) => c.id !== id);
+  if (editingId === id) editingId = null;
+  saveCourses();
+  render();
+}
+
+function saveGradeEdit(id, rawValue) {
+  const grade = Number(rawValue);
+
+  if (!Number.isFinite(grade) || grade < 0 || grade > 100) {
+    showError(t("errorGrade"));
+    return;
+  }
+
+  const course = courses.find((c) => c.id === id);
+  if (course) course.grade = grade;
+
+  editingId = null;
+  clearError();
   saveCourses();
   render();
 }
@@ -236,10 +313,6 @@ form.addEventListener("submit", (e) => {
   const credits = Number(creditsInput.value);
   const grade = Number(gradeInput.value);
 
-  if (!name) {
-    showError(t("errorName"));
-    return;
-  }
   if (!Number.isFinite(credits) || credits <= 0) {
     showError(t("errorCredits"));
     return;
@@ -257,23 +330,35 @@ form.addEventListener("submit", (e) => {
   nameInput.focus();
 });
 
+const CALCULATE_ANIMATION_MS = 700;
+
 calculateBtn.addEventListener("click", () => {
   const average = calculateAverage(courses);
 
-  if (average === null) {
-    resultEl.hidden = false;
-    resultEl.textContent = t("resultEmpty");
-    return;
-  }
+  resultEl.hidden = true;
+  resultLoaderEl.hidden = false;
+  calculateBtn.disabled = true;
 
-  resultEl.hidden = false;
-  resultEl.textContent = t("resultText")(average.toFixed(2));
+  setTimeout(() => {
+    resultLoaderEl.hidden = true;
+    calculateBtn.disabled = false;
+
+    if (average === null) {
+      resultEl.hidden = false;
+      resultEl.textContent = t("resultEmpty");
+      return;
+    }
+
+    resultEl.hidden = false;
+    resultEl.textContent = t("resultText")(average.toFixed(2));
+  }, CALCULATE_ANIMATION_MS);
 });
 
 clearBtn.addEventListener("click", () => {
   if (courses.length === 0) return;
   if (!confirm(t("confirmClear"))) return;
   courses = [];
+  editingId = null;
   saveCourses();
   render();
 });

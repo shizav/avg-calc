@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Undergraduate Average Calculator</title>
+  <link rel="icon" type="image/jpeg" href="snoopy.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -38,7 +39,7 @@
     <form id="course-form" class="course-form" novalidate>
       <div class="field">
         <label for="course-name" data-i18n="courseName">Course name</label>
-        <input type="text" id="course-name" name="course-name" data-i18n-placeholder="courseNamePlaceholder" placeholder="e.g. Calculus 1" required />
+        <input type="text" id="course-name" name="course-name" data-i18n-placeholder="courseNamePlaceholder" placeholder="e.g. Calculus 1" />
       </div>
       <div class="field">
         <label for="course-credits" data-i18n="creditPoints">Credit points</label>
@@ -74,6 +75,9 @@
       <button type="button" id="clear-btn" class="btn btn-clear" data-i18n="clearAll">Clear all</button>
     </div>
 
+    <div id="result-loader" class="result-loader" hidden aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
     <div id="result" class="result" hidden></div>
   </main>
 
