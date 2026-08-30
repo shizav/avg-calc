@@ -12,6 +12,16 @@
   --color-error-text: #b91c1c;
   --color-result-bg: #eff6ff;
   --color-result-text: #1e3a8a;
+
+  --font-heading: "Fjalla One", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html[lang="he"] {
+  /* Fredoka and M PLUS 1p have no Hebrew glyphs; Rubik/Heebo are the closest-styled
+     Google Fonts that actually support Hebrew (rounded-geometric heading, clean body). */
+  --font-heading: "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {
@@ -20,9 +30,19 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   background: var(--color-bg);
   color: var(--color-text);
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+h1,
+.course-table th {
+  font-family: var(--font-heading);
 }
 
 .container {
@@ -43,15 +63,83 @@ h1 {
   margin-bottom: 0.25rem;
 }
 
-.btn-lang {
+.lang-switcher {
+  position: relative;
   flex-shrink: 0;
-  background: var(--color-surface);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
 }
 
-.btn-lang:hover {
+.lang-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.lang-icon-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.lang-icon-btn img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-end: 0;
+  min-width: 130px;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.lang-menu.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.lang-menu li {
+  margin: 0;
+}
+
+.lang-menu button {
+  display: block;
+  width: 100%;
+  text-align: start;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.lang-menu button:hover {
   background: var(--color-result-bg);
+}
+
+.lang-menu button.active {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .subtitle {

@@ -4,13 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Undergraduate Average Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Fredoka:wght@400;600&family=Lato:wght@400;700&family=M+PLUS+1p:wght@400;700&family=Rubik:wght@400;600&family=Heebo:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="container">
     <div class="header-row">
       <h1 data-i18n="title">Undergraduate Average Calculator</h1>
-      <button type="button" id="lang-toggle" class="btn btn-lang">עברית</button>
+      <div class="lang-switcher">
+        <button
+          type="button"
+          id="lang-toggle"
+          class="lang-icon-btn"
+          aria-haspopup="true"
+          aria-expanded="false"
+          data-i18n-alt="changeLanguage"
+        >
+          <img src="lang.png" alt="Change language" />
+        </button>
+        <ul id="lang-menu" class="lang-menu" role="menu">
+          <li role="none"><button type="button" role="menuitem" data-lang="en">English</button></li>
+          <li role="none"><button type="button" role="menuitem" data-lang="he">עברית</button></li>
+        </ul>
+      </div>
     </div>
     <p class="subtitle" data-i18n="subtitle">Add each course's credit points and grade to see your weighted average.</p>
 

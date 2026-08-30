@@ -24,7 +24,7 @@ const translations = {
     resultEmpty: "Add at least one course to calculate an average.",
     resultText: (avg) => `Current average: ${avg}`,
     confirmClear: "Remove all courses?",
-    langToggle: "עברית",
+    changeLanguage: "Change language",
   },
   he: {
     title: "מחשבון ממוצע לתואר",
@@ -48,7 +48,7 @@ const translations = {
     resultEmpty: "יש להוסיף לפחות קורס אחד כדי לחשב ממוצע.",
     resultText: (avg) => `הממוצע הנוכחי: ${avg}`,
     confirmClear: "למחוק את כל הקורסים?",
-    langToggle: "English",
+    changeLanguage: "החלף שפה",
   },
 };
 
@@ -87,7 +87,40 @@ const emptyState = document.getElementById("empty-state");
 const calculateBtn = document.getElementById("calculate-btn");
 const clearBtn = document.getElementById("clear-btn");
 const resultEl = document.getElementById("result");
-const langToggleBtn = document.getElementById("lang-toggle");
+const langMenuBtn = document.getElementById("lang-toggle");
+const langMenu = document.getElementById("lang-menu");
+
+function openLangMenu() {
+  langMenu.classList.add("open");
+  langMenuBtn.setAttribute("aria-expanded", "true");
+}
+
+function closeLangMenu() {
+  langMenu.classList.remove("open");
+  langMenuBtn.setAttribute("aria-expanded", "false");
+}
+
+langMenuBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (langMenu.classList.contains("open")) {
+    closeLangMenu();
+  } else {
+    openLangMenu();
+  }
+});
+
+langMenu.querySelectorAll("button[data-lang]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    applyLanguage(btn.dataset.lang);
+    closeLangMenu();
+  });
+});
+
+document.addEventListener("click", (e) => {
+  if (!langMenu.contains(e.target) && e.target !== langMenuBtn) {
+    closeLangMenu();
+  }
+});
 
 function applyLanguage(lang) {
   currentLang = lang;
@@ -101,7 +134,13 @@ function applyLanguage(lang) {
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
-  langToggleBtn.textContent = t("langToggle");
+  document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+    const img = el.querySelector("img");
+    if (img) img.alt = t(el.dataset.i18nAlt);
+  });
+  langMenu.querySelectorAll("button[data-lang]").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
 
   saveLang(lang);
   clearError();
@@ -237,10 +276,6 @@ clearBtn.addEventListener("click", () => {
   courses = [];
   saveCourses();
   render();
-});
-
-langToggleBtn.addEventListener("click", () => {
-  applyLanguage(currentLang === "en" ? "he" : "en");
 });
 
 applyLanguage(currentLang);
