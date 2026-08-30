@@ -8,23 +8,26 @@
 </head>
 <body>
   <main class="container">
-    <h1>Undergraduate Average Calculator</h1>
-    <p class="subtitle">Add each course's credit points and grade to see your weighted average.</p>
+    <div class="header-row">
+      <h1 data-i18n="title">Undergraduate Average Calculator</h1>
+      <button type="button" id="lang-toggle" class="btn btn-lang">עברית</button>
+    </div>
+    <p class="subtitle" data-i18n="subtitle">Add each course's credit points and grade to see your weighted average.</p>
 
     <form id="course-form" class="course-form" novalidate>
       <div class="field">
-        <label for="course-name">Course name</label>
-        <input type="text" id="course-name" name="course-name" placeholder="e.g. Calculus 1" required />
+        <label for="course-name" data-i18n="courseName">Course name</label>
+        <input type="text" id="course-name" name="course-name" data-i18n-placeholder="courseNamePlaceholder" placeholder="e.g. Calculus 1" required />
       </div>
       <div class="field">
-        <label for="course-credits">Credit points</label>
-        <input type="number" id="course-credits" name="course-credits" min="0" step="0.5" placeholder="e.g. 5" required />
+        <label for="course-credits" data-i18n="creditPoints">Credit points</label>
+        <input type="number" id="course-credits" name="course-credits" min="0" step="0.5" data-i18n-placeholder="creditPointsPlaceholder" placeholder="e.g. 5" required />
       </div>
       <div class="field">
-        <label for="course-grade">Grade</label>
-        <input type="number" id="course-grade" name="course-grade" min="0" max="100" step="0.1" placeholder="e.g. 90" required />
+        <label for="course-grade" data-i18n="grade">Grade</label>
+        <input type="number" id="course-grade" name="course-grade" min="0" max="100" step="0.1" data-i18n-placeholder="gradePlaceholder" placeholder="e.g. 90" required />
       </div>
-      <button type="submit" class="btn btn-add">Add course</button>
+      <button type="submit" class="btn btn-add" data-i18n="addCourse">Add course</button>
     </form>
 
     <p id="form-error" class="error" role="alert" hidden></p>
@@ -32,9 +35,9 @@
     <table class="course-table">
       <thead>
         <tr>
-          <th>Course</th>
-          <th>Credits</th>
-          <th>Grade</th>
+          <th data-i18n="course">Course</th>
+          <th data-i18n="credits">Credits</th>
+          <th data-i18n="grade">Grade</th>
           <th></th>
         </tr>
       </thead>
@@ -43,11 +46,11 @@
       </tbody>
     </table>
 
-    <p id="empty-state" class="empty-state">No courses added yet.</p>
+    <p id="empty-state" class="empty-state" data-i18n="emptyState">No courses added yet.</p>
 
     <div class="actions">
-      <button type="button" id="calculate-btn" class="btn btn-calculate">Calculate</button>
-      <button type="button" id="clear-btn" class="btn btn-clear">Clear all</button>
+      <button type="button" id="calculate-btn" class="btn btn-calculate" data-i18n="calculate">Calculate</button>
+      <button type="button" id="clear-btn" class="btn btn-clear" data-i18n="clearAll">Clear all</button>
     </div>
 
     <div id="result" class="result" hidden></div>

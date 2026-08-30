@@ -1,4 +1,78 @@
 const STORAGE_KEY = "avg-calc:courses";
+const LANG_KEY = "avg-calc:lang";
+
+const translations = {
+  en: {
+    title: "Undergraduate Average Calculator",
+    subtitle: "Add each course's credit points and grade to see your weighted average.",
+    courseName: "Course name",
+    courseNamePlaceholder: "e.g. Calculus 1",
+    creditPoints: "Credit points",
+    creditPointsPlaceholder: "e.g. 5",
+    grade: "Grade",
+    gradePlaceholder: "e.g. 90",
+    addCourse: "Add course",
+    course: "Course",
+    credits: "Credits",
+    remove: "Remove",
+    calculate: "Calculate",
+    clearAll: "Clear all",
+    emptyState: "No courses added yet.",
+    errorName: "Please enter a course name.",
+    errorCredits: "Credit points must be a positive number.",
+    errorGrade: "Grade must be a number between 0 and 100.",
+    resultEmpty: "Add at least one course to calculate an average.",
+    resultText: (avg) => `Current average: ${avg}`,
+    confirmClear: "Remove all courses?",
+    langToggle: "עברית",
+  },
+  he: {
+    title: "מחשבון ממוצע לתואר",
+    subtitle: "הוסיפו את נקודות הזכות והציון של כל קורס כדי לראות את הממוצע המשוקלל.",
+    courseName: "שם הקורס",
+    courseNamePlaceholder: "לדוגמה: חשבון אינפיניטסימלי 1",
+    creditPoints: "נקודות זכות",
+    creditPointsPlaceholder: "לדוגמה: 5",
+    grade: "ציון",
+    gradePlaceholder: "לדוגמה: 90",
+    addCourse: "הוסף קורס",
+    course: "קורס",
+    credits: 'נק"ז',
+    remove: "הסר",
+    calculate: "חשב",
+    clearAll: "נקה הכול",
+    emptyState: "עדיין לא נוספו קורסים.",
+    errorName: "יש להזין שם קורס.",
+    errorCredits: "נקודות הזכות חייבות להיות מספר חיובי.",
+    errorGrade: "הציון חייב להיות מספר בין 0 ל-100.",
+    resultEmpty: "יש להוסיף לפחות קורס אחד כדי לחשב ממוצע.",
+    resultText: (avg) => `הממוצע הנוכחי: ${avg}`,
+    confirmClear: "למחוק את כל הקורסים?",
+    langToggle: "English",
+  },
+};
+
+let currentLang = loadLang();
+
+function loadLang() {
+  try {
+    return localStorage.getItem(LANG_KEY) || "en";
+  } catch {
+    return "en";
+  }
+}
+
+function saveLang(lang) {
+  try {
+    localStorage.setItem(LANG_KEY, lang);
+  } catch {
+    // localStorage unavailable — language choice just won't persist
+  }
+}
+
+function t(key) {
+  return translations[currentLang][key];
+}
 
 /** @type {{id: string, name: string, credits: number, grade: number}[]} */
 let courses = loadCourses();
@@ -13,6 +87,27 @@ const emptyState = document.getElementById("empty-state");
 const calculateBtn = document.getElementById("calculate-btn");
 const clearBtn = document.getElementById("clear-btn");
 const resultEl = document.getElementById("result");
+const langToggleBtn = document.getElementById("lang-toggle");
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+  document.title = t("title");
+
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  langToggleBtn.textContent = t("langToggle");
+
+  saveLang(lang);
+  clearError();
+  resultEl.hidden = true;
+  render();
+}
 
 function loadCourses() {
   try {
@@ -77,7 +172,7 @@ function render() {
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "remove-btn";
-    removeBtn.textContent = "Remove";
+    removeBtn.textContent = t("remove");
     removeBtn.addEventListener("click", () => removeCourse(course.id));
     actionCell.appendChild(removeBtn);
 
@@ -103,15 +198,15 @@ form.addEventListener("submit", (e) => {
   const grade = Number(gradeInput.value);
 
   if (!name) {
-    showError("Please enter a course name.");
+    showError(t("errorName"));
     return;
   }
   if (!Number.isFinite(credits) || credits <= 0) {
-    showError("Credit points must be a positive number.");
+    showError(t("errorCredits"));
     return;
   }
   if (!Number.isFinite(grade) || grade < 0 || grade > 100) {
-    showError("Grade must be a number between 0 and 100.");
+    showError(t("errorGrade"));
     return;
   }
 
@@ -128,20 +223,24 @@ calculateBtn.addEventListener("click", () => {
 
   if (average === null) {
     resultEl.hidden = false;
-    resultEl.textContent = "Add at least one course to calculate an average.";
+    resultEl.textContent = t("resultEmpty");
     return;
   }
 
   resultEl.hidden = false;
-  resultEl.textContent = `Current average: ${average.toFixed(2)}`;
+  resultEl.textContent = t("resultText")(average.toFixed(2));
 });
 
 clearBtn.addEventListener("click", () => {
   if (courses.length === 0) return;
-  if (!confirm("Remove all courses?")) return;
+  if (!confirm(t("confirmClear"))) return;
   courses = [];
   saveCourses();
   render();
 });
 
-render();
+langToggleBtn.addEventListener("click", () => {
+  applyLanguage(currentLang === "en" ? "he" : "en");
+});
+
+applyLanguage(currentLang);
